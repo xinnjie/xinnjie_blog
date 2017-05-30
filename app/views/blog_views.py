@@ -1,4 +1,4 @@
-from flask import render_template, url_for, redirect, abort, url_for
+from flask import render_template, abort, Blueprint
 
 from ..blog_app import app
 from ..stuff import Post

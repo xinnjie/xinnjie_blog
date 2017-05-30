@@ -8,3 +8,4 @@ class Config:
 	ARTICLES_FOLDER = os.path.join(APP_PATH, 'articles')
 	POST_THUMBNAIL_LINES = 4
 	CATEGORY_NAMES = frozenset(('net', 'algo', 'garbage', 'reading', 'default'))
+	SECRET_KEY = 'HELLO'
