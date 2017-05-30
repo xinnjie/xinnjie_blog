@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+    <div>
+        <!--start posts -->
+        {% for post in posts %}
+            <!--TODO class post-->
+            <div class="post">
+                <h3 class="page-header">
+                    <a href={{ url_for("articles", article_title=post.title) }}>
+                        {{ post.title }}
+                    </a>
+                    <small class="pull-right">{{ post.datetime.date().isoformat() }}</small>
+                </h3>
+            </div>
+        {% endfor %}
+        <!--end posts-->
+    </div>
+{% endblock %}

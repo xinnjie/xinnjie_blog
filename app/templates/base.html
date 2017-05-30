@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <script src="https://cdn.bootcss.com/jquery/3.2.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="/static/bootstrap.css">
+    <link rel="stylesheet" href="/static/blog.css">
+
+
+    <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+    <script src="/static/bootstrap.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    {% if title %}
+        <title>{{ title }}</title>
+    {% else %}
+        <title>xinjie blog</title>
+    {% endif %}
+</head>
+<body class="container">
+<!--start header-->
+<header id="blog-header">
+    <h1>
+                <span class="first">
+                    Ge
+                </span>
+        <span class="last">
+                    Xinjie
+                </span>
+    </h1>
+</header>
+<!--end header-->
+<!--start navigation-->
+<nav class="navbar navbar-default" id="blog-navbar">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse-1"
+                aria-expanded="false">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="#">
+            <!--<img width="20" height="20" src="/static/logoo.png" alt="Hello">-->
+        </a>
+        <!--TODO logo没办法和菜单对齐-->
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse pull-right" id="navbar-collapse-1" style="padding-right: 0">
+        <ul class="nav navbar-nav">
+            <li><a href="/index">首页</a></li>
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                   aria-expanded="false">文章分类 <span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                    <li><a href="/categories/net">网络</a></li>
+                    <li><a href="/categories/algo">算法</a></li>
+                    <li role="separator" class="divider"></li>
+                    <li><a href="/categories/reading">读书</a></li>
+                    <li role="separator" class="divider"></li>
+                    <li><a href="/categories/garbage">垃圾场</a></li>
+                </ul>
+            </li>
+            <li><a href="/about " style="padding-right: 0">关于</a></li>
+        </ul>
+    </div><!-- /.navbar-collapse -->
+
+</nav>
+<!--end navigation -->
+
+<!--start content-->
+{% block content %}
+{% endblock %}
+<!--end content-->
+
+<!--start footer-->
+<footer id="blog-footer">
+    <div class="pull-right">
+                <span>
+                    Xinjie
+                </span>
+        <a href="mailto:xinjie_31@163.com">xinjie_31@163.com</a>
+    </div>
+</footer>
+<!--end footer-->
+</body>
+
+
+</html>

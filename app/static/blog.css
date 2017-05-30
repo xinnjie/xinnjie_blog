@@ -1,0 +1,28 @@
+#blog-header {
+    padding-top: 30px;
+    border-left: 3px solid #e67e22;
+    background: #f4f8f9;
+}
+
+#blog-navbar {
+    background: #ffffff;
+    border-color: #ffffff;
+}
+
+#blog-footer {
+    margin-top: 50px;
+    border-left: 3px solid #e67e22;
+    background: #f4f8f9;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+article {
+    border-bottom: 1px #bdc3c7 solid;
+    padding-bottom: 1em;
+}
+
+p {
+    font-weight: normal;
+}
+

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="container">
+        <article class="post">
+            <div class="page-header">
+                <h1>{{ post.title }}
+                    <small class="pull-right">{{ post.datetime.date().isoformat() }}</small>
+                </h1>
+            </div>
+            <div>
+                <p>{{ post.content | safe }}</p>
+
+            </div>
+        </article>
+    </div>
+{% endblock %}

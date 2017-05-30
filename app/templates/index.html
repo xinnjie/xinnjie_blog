@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+
+    <!--start posts -->
+    <div class="container">
+        {% for post in posts %}
+            <!--TODO class post-->
+            <article class="col-xs-12 col-md-8">
+                <h2 class="page-header">
+                    <a href={{ url_for("articles", article_title=post.title) }}>
+                        {{ post.title }}
+                    </a>
+                    <small class="pull-right">{{ post.datetime.date().isoformat() }}</small>
+                </h2>
+                <div>
+                    <!--TODO 文章片段未设置-->
+                    <p> {{ post.thumbnail | safe }} </p>
+
+                </div>
+
+            </article>
+        {% endfor %}
+    </div>
+    <!--end posts-->
+{% endblock %}
