@@ -1,5 +1,8 @@
-from flask import render_template, request, flash, redirect, url_for, Blueprint
+import time, random, threading
+
+from flask import render_template, request, flash, redirect, url_for, Blueprint, make_response
 from wtforms import Form, StringField, TextAreaField, validators
+from werkzeug.contrib.cache import RedisCache
 
 from ..turing_machine import TuringMachine, Tape, TMConstructionError, HaltException, BreakDownException
 from app import app
@@ -12,22 +15,74 @@ ALLOWED_EXTENSIONS = {'txt'}
 
 # 由于这个应用作为一个演示图灵机的工具，并没有并发的需求，所以我在这里使用了指向一个图灵机的全局变量
 # tm初始是演示用图灵机，把纸带上的所以0改成1
-trans_funcs = 'f(q0, 0) = (q0, 1, R);\n f(q0, 1) = (q0, 1, R);\nf(q0, B) = (q1, B, S);'
-states = {'q0', 'q1'}
-start_state = 'q0'
-termin_states = {'q1'}
 
-machine = TuringMachine('modify all 0 to 1', states, start_state, termin_states, trans_funcs, tape='0010101')
+
+
+def get_default_tm():
+	description = 'set all 0s to 1'
+	trans_funcs = 'f(q0, 0) = (q0, 1, R);\n f(q0, 1) = (q0, 1, R);\nf(q0, B) = (q1, B, S);'
+	states = {'q0', 'q1'}
+	start_state = 'q0'
+	termin_states = {'q1'}
+	return TuringMachine(description, states, start_state, termin_states, trans_funcs, tape='01010110101')
+
+
+# 多线程可用的cache，但是gunicorn是多进程的
+# # cache.get(somthing, duration=300)
+# class CachedItem:
+# 	def __init__(self, item, duration):
+# 		self.item = item
+# 		self.duration = duration
+# 		self.time_stamp = time.time()
+#
+# 	def __repr__(self):
+# 		return '<CachedItem {%s} expires at: %s>' % (self.item, time.time() + self.duration)
+#
+#
+# class CachedDict(dict):
+# 	def __init__(self, *args, **kwargs):
+# 		super(CachedDict, self).__init__(*args, **kwargs)
+# 		self.lock = threading.Lock()
+#
+# 	def get_cache(self, key, default=None, duration=300):
+# 		with self.lock:
+# 			self._clean()
+# 			if key in self:
+# 				return self[key].item
+# 			else:
+# 				self[key] = CachedItem(default, duration)
+# 			return self[key].item
+#
+# 	def set_cache(self, key, value, duration=300):
+# 		with self.lock:
+# 			self[key] = CachedItem(value, duration)
+#
+# 	def _clean(self):
+# 		for key in list(self.keys()): # [self.keys()] error, we get dict_keys type
+# 			if self[key].time_stamp + self[key].duration <= time.time():
+# 				self.pop(key)
+
+machines_cache = RedisCache()
 
 
 @tm.route('/', methods=['GET', 'POST'])
 def tm_gui():
 	# todo 目标，表格信息填写与图灵机运行分离，可运行多个图灵机
 	form = TMForm(request.form)
+	machine_id = request.cookies.get('tm')  # maybe None
+	new_tm_flag = True
 	if request.method == 'GET':
-		global machine
+		if machine_id:
+			new_tm_flag = False
+		else:
+			machine_id = str(random.randint(0, 100))
+		machine = machines_cache.get(machine_id)
+		if not machine:
+			machine = get_default_tm()
+			machines_cache.set(machine_id, machine)
 		tape_html = tape2html(*machine.current_tape_pos)
 		machine.step_forward()
+		machines_cache.set(machine_id, machine)
 		try:
 			next_trans_func = machine.next_transforming_func
 		except HaltException:
@@ -38,9 +93,13 @@ def tm_gui():
 			flash('next transforming func not exist', 'Error')
 		data = {'states': set2str(machine.states), 'terminate_states': set2str(machine.terminate_states),
 		        'tape_symbols': set2str(machine.tape_symbols)}
-
-		return render_template('tm.html', tape_html=tape_html, form=form, next_trans_func=next_trans_func,
+		resp = render_template('tm.html', tape_html=tape_html, form=form, next_trans_func=next_trans_func,
 		                       current_tm=machine, data=data)
+		if new_tm_flag:
+			resp = make_response(resp)
+			resp.set_cookie('tm', machine_id, max_age=200)
+		return resp
+
 	if request.method == 'POST':
 		if 'new_tm' in request.files:
 			file = request.files['new_tm']
@@ -83,6 +142,7 @@ def tm_gui():
 		app.logger.info("trans_funcs is " + trans_funcs)
 		try:
 			machine = TuringMachine(description, states, start_state, termin_states, trans_funcs, tape=tape)
+			machines_cache.set(machine_id, machine)
 		except TMConstructionError as e:
 			flash('fail to construct the given turing machine, because: ' + str(e), 'error')
 			app.logger.error('fail to construct the given tutring machine, because ' + str(e))
@@ -93,8 +153,12 @@ def tm_gui():
 
 @tm.route('/run')
 def tm_run():
+	machine_id = request.cookies.get('tm')
+	machine = machines_cache.get(machine_id) or get_default_tm()
+
 	if not machine.run():
 		flash('this machine may not stop(has steped forward 1000 times)', 'Info')
+	machines_cache.set(machine_id, machine)
 	return redirect(url_for('tm.tm_gui'))
 
 

@@ -222,6 +222,8 @@ class TuringMachine:
 
 		return False
 
+	def __repr__(self):
+		return "Truring Machine pos at {}, discription: {}".format(self.position, self.description)
 
 class Tape:
 	"""
