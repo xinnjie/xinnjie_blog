@@ -26,7 +26,6 @@ def get_default_tm():
 	termin_states = {'q1'}
 	return TuringMachine(description, states, start_state, termin_states, trans_funcs, tape='01010110101')
 
-
 # 多线程可用的cache，但是gunicorn是多进程的
 # # cache.get(somthing, duration=300)
 # class CachedItem:
@@ -81,7 +80,11 @@ def tm_gui():
 			machine = get_default_tm()
 			machines_cache.set(machine_id, machine)
 		tape_html = tape2html(*machine.current_tape_pos)
-		machine.step_forward()
+		try:  # todo 一旦发生 BreakDownException 会一直重定向
+			machine.step_forward()
+		except BreakDownException as e:
+			flash(str(e), 'Error')
+			return redirect(url_for('tm.tm_gui'))
 		machines_cache.set(machine_id, machine)
 		try:
 			next_trans_func = machine.next_transforming_func
@@ -114,6 +117,10 @@ def tm_gui():
 				except IndexError as e:
 					app.logger.error(str(e))
 					flash('the uploaded TM do not fit', 'Error')
+					return redirect(url_for('tm.tm_gui'))
+				except ValueError as e:
+					app.logger.error(str(e))
+					flash("the file doesn't match the format   " + str(e), 'Error')
 					return redirect(url_for('tm.tm_gui'))
 		# if there is no file uploaded, then check the form
 		else:

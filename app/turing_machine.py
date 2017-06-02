@@ -123,7 +123,7 @@ class TuringMachine:
 	def position(self, value: int):
 		if not isinstance(value, int):
 			raise TypeError('value should be type of ' + str(type(0)) + ' not ' + str(type(value)))
-		if value < 0:  # todo 为方便起见，有可能到达-1，指向的字母是 空，这里再做打算
+		if value < -1:  # todo 为方便起见，有可能到达-1，指向的字母是 空，这里再做打算
 			raise IndexError("position index out of range, position can not be " + str(value))
 		self._position = value
 
@@ -177,13 +177,13 @@ class TuringMachine:
 		try:
 			next_step = self.transform_funcs[(self.current_state, read_letter)]
 		except KeyError:
-			raise BreakDownException('func')
+			raise BreakDownException('func not exist: ' + 'f({}, {})'.format(self.current_state, read_letter))
 		self.current_state, tape[self.position], direction = next_step
 		self.position = self.position + self.__class__.direction[direction]
 
 	def step_forward(self, steps=0) -> list:
 		"""
-		
+
 		:param steps: the steps you want to run
 		:return: list of string, the string represent the tape
 		"""
@@ -222,34 +222,32 @@ class TuringMachine:
 
 		return False
 
-	def __repr__(self):
-		return "Truring Machine pos at {}, discription: {}".format(self.position, self.description)
 
 class Tape:
 	"""
 	Tape 模拟无限长纸带
-	
+
 	输入‘12345’
 	tape = Tape('12345')
 	tape[0] == 1
 	tape[1:3] == '23'
 	tape[5] == 'B'    'B'指的是可设置的空白符
 	tape[-1:6] == 'B12345B''
-	
+
 	Error:
 	! tape[:3] == '123'     None在无限长纸带上切片是不需要的  start 的 None 可用 0 替代  stop 的 None 是没有意义的，因为纸带向右无限延伸
-	
+
 	另外，不像str那样不支持 item assignment
 	Tape 支持此类操作，但限制替换字符只有一位
 	tape[0] = '0' -> tape == '02345'
-	
+
 	Error:
 	tape[0] = '00' 
-	
+
 	甚至 隐式地增长 长度，增长的部分用空白符 'B' 代替
 	tape[10] = 'A' -> tape == '12345BBBBBA'
-	
-	
+
+
 	"""
 
 	# TODO tape[0:5] = 'abcde'  复制操作以后再说
@@ -285,7 +283,9 @@ class Tape:
 		if not isinstance(value, str) and len(value) != 1:
 			raise TypeError(
 				'the type of value is supposed to be str and the length is supposed to be 1, not ' + str(value))
-		if key < 0:
+		if key == -1:
+			return
+		if key < -1:
 			raise TypeError('key should be > 0, not ' + str(key))
 		if 0 <= key < len(self.string):
 			l = list(self.string)
@@ -387,3 +387,4 @@ class MachineTest(unittest.TestCase):
 	def test_step_forwards(self):
 		self.tm.tape = '11001101'
 		rs = self.tm.step_forward(5)
+
